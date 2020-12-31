@@ -71,6 +71,7 @@ extern char tmp_buffer[];
 extern char ether_buffer[];
 
 #if defined(ESP8266)
+	INA219 OpenSprinkler::INA219CurrentSensor; // added INA219
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
 	byte OpenSprinkler::state = OS_STATE_INITIAL;
 	byte OpenSprinkler::prev_station_bits[MAX_NUM_BOARDS];
@@ -655,6 +656,13 @@ void OpenSprinkler::lcd_start() {
 	lcd.init();
 	lcd.begin();
 	flash_screen();
+
+	// initialise INA219 INA_219
+  	INA219CurrentSensor.begin();
+	// To use a slightly lower 32V, 1A range (higher precision on amps):
+	//ina219.setCalibration_32V_1A();
+	// Or to use a lower 16V, 400mA range (higher precision on volts and amps):
+	//ina219.setCalibration_16V_400mA();
 #else
 	// initialize 16x2 character LCD
 	// turn on lcd
@@ -1264,7 +1272,8 @@ uint16_t OpenSprinkler::read_current() {
 	if(status.has_curr_sense) {
 		if (hw_type == HW_TYPE_DC) {
 			#if defined(ESP8266)
-			scale = 4.88;
+			/* was scale = 4.88; Modification for INA219*/
+			scale = 0.1;
 			#else
 			scale = 16.11;
 			#endif
@@ -1279,9 +1288,9 @@ uint16_t OpenSprinkler::read_current() {
 		}
 		/* do an average */
 		const byte K = 8;
-		uint16_t sum = 0;
+		uint32_t sum = 0;
 		for(byte i=0;i<K;i++) {
-			sum += analogRead(PIN_CURR_SENSE);
+			sum += INA219CurrentSensor.shuntCurrentRaw();
 			delay(1);
 		}
 		return (uint16_t)((sum/K)*scale);
