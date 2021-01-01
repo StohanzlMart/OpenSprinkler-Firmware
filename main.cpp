@@ -578,18 +578,19 @@ void do_loop()
 		// SHT31
 		os.SHT31sensor.read(false);
 		push_message(NOTIFY_CUSTOM_SENSOR,0,os.SHT31sensor.getTemperature(),"temp");
-		push_message(NOTIFY_CUSTOM_SENSOR,1,os.SHT31sensor.getHumidity(),"hum");
+		push_message(NOTIFY_CUSTOM_SENSOR,0,os.SHT31sensor.getHumidity(),"hum");
+
 
 		// ADS1115
-		push_message(NOTIFY_CUSTOM_SENSOR,2,os.readChannel(ADS1115_COMP_0_GND),"adc0");
-		push_message(NOTIFY_CUSTOM_SENSOR,3,os.readChannel(ADS1115_COMP_1_GND),"adc1");
-		push_message(NOTIFY_CUSTOM_SENSOR,4,os.readChannel(ADS1115_COMP_2_GND),"adc2");
-		push_message(NOTIFY_CUSTOM_SENSOR,5,os.readChannel(ADS1115_COMP_3_GND),"adc3");
+		push_message(NOTIFY_CUSTOM_SENSOR,0,os.readChannel(ADS1115_COMP_0_GND),"adc");
+		push_message(NOTIFY_CUSTOM_SENSOR,1,os.readChannel(ADS1115_COMP_1_GND),"adc");
+		push_message(NOTIFY_CUSTOM_SENSOR,2,os.readChannel(ADS1115_COMP_2_GND),"adc");
+		push_message(NOTIFY_CUSTOM_SENSOR,3,os.readChannel(ADS1115_COMP_3_GND),"adc");
 		
 		// INA
-		push_message(NOTIFY_CUSTOM_SENSOR,6,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(0)/1000,"INA0");
-		push_message(NOTIFY_CUSTOM_SENSOR,7,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(1)/1000,"INA1");
-		push_message(NOTIFY_CUSTOM_SENSOR,8,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(2)/1000,"INA2");
+		push_message(NOTIFY_CUSTOM_SENSOR,0,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(0)/1000,"INA");
+		push_message(NOTIFY_CUSTOM_SENSOR,1,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(1)/1000,"INA");
+		push_message(NOTIFY_CUSTOM_SENSOR,2,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(2)/1000,"INA");
 
 #if defined(ENABLE_DEBUG)
 	/*
@@ -1321,8 +1322,8 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 
 			// todo: add IFTTT support for this event as well
 			if (os.mqtt.enabled()) {
-				sprintf_P(topic, PSTR("opensprinkler/sensor/custom/%d"), lval);
-				sprintf_P(payload, PSTR("{\"%s\":%d}"), sval, (int) fval);
+				sprintf_P(topic, PSTR("opensprinkler/sensor/%s/%d"), sval, lval);
+				sprintf_P(payload, PSTR("{\"value\":%d.%02d}"), (int)fval, (int)(fval*100)%100);
 			}
 			break;
 
