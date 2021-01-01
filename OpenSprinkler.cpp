@@ -71,7 +71,7 @@ extern char tmp_buffer[];
 extern char ether_buffer[];
 
 #if defined(ESP8266)
-	INA219 OpenSprinkler::INA219CurrentSensor; // added INA219
+	INA_Class OpenSprinkler::INAcurrentSensor; // Added INA Current Sensor
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
 	byte OpenSprinkler::state = OS_STATE_INITIAL;
 	byte OpenSprinkler::prev_station_bits[MAX_NUM_BOARDS];
@@ -657,12 +657,24 @@ void OpenSprinkler::lcd_start() {
 	lcd.begin();
 	flash_screen();
 
-	// initialise INA219 INA_219
-  	INA219CurrentSensor.begin();
-	// To use a slightly lower 32V, 1A range (higher precision on amps):
-	//ina219.setCalibration_32V_1A();
-	// Or to use a lower 16V, 400mA range (higher precision on volts and amps):
-	//ina219.setCalibration_16V_400mA();
+	// init INA Current Sensors with (maxAmp,µOhm,[devID])
+	// for further details refer to https://github.com/Zanduino/INA/wiki/
+	INAcurrentSensor.begin(5,100000);
+	INAcurrentSensor.setBusConversion(8244);             // Maximum conversion time 8.244ms
+	INAcurrentSensor.setShuntConversion(8244);           // Maximum conversion time 8.244ms
+	INAcurrentSensor.setAveraging(128);                  // Average each reading n-times
+	/*INA_MODE_SHUTDOWN,          ///< Device powered down
+	---> CAREFUL! If the system mode is set to triggered measurements rather than continuous
+		ones (see setMode() for details) then the next measurement is not triggered by this
+		read, that needs to be done with a call to getBusMilliVolts() or getShuntMicroVolts().
+  	INA_MODE_TRIGGERED_SHUNT,   ///< Triggered shunt, no bus
+  	INA_MODE_TRIGGERED_BUS,     ///< Triggered bus, no shunt
+  	INA_MODE_TRIGGERED_BOTH,    ///< Triggered bus and shunt
+  	INA_MODE_POWER_DOWN,        ///< shutdown or power-down
+  	INA_MODE_CONTINUOUS_SHUNT,  ///< Continuous shunt, no bus
+  	INA_MODE_CONTINUOUS_BUS,    ///< Continuous bus, no shunt*/
+	INAcurrentSensor.setMode(INA_MODE_CONTINUOUS_BOTH);  // Bus/shunt measured continuously
+	INAcurrentSensor.alertOnBusOverVoltage(true, 12000);  // Trigger alert if over 12V on bus
 #else
 	// initialize 16x2 character LCD
 	// turn on lcd
@@ -854,8 +866,8 @@ void OpenSprinkler::begin() {
 	#if defined(ESP8266)	// OS3.0 specific detections
 
 		status.has_curr_sense = 1;	// OS3.0 has current sensing capacility
-		// measure baseline current
-		baseline_current = 80;
+		// measure baseline current (was 80, changed for use of INA Current Sensor)
+		baseline_current = 5;
 		
 	#else // OS 2.3 specific detections
 
@@ -1270,10 +1282,9 @@ void OpenSprinkler::sensor_resetall() {
 uint16_t OpenSprinkler::read_current() {
 	float scale = 1.0f;
 	if(status.has_curr_sense) {
-		if (hw_type == HW_TYPE_DC) {
+		/*if (hw_type == HW_TYPE_DC) {
 			#if defined(ESP8266)
-			/* was scale = 4.88; Modification for INA219*/
-			scale = 0.1;
+			scale = 4.88;
 			#else
 			scale = 16.11;
 			#endif
@@ -1285,15 +1296,17 @@ uint16_t OpenSprinkler::read_current() {
 			#endif		 
 		} else {
 			scale = 0.0;	// for other controllers, current is 0
-		}
-		/* do an average */
+		} */ //^^^^^\\ also not needed atm, maybe uncomment when MQTT fin
+		/* do an average --> Not needed anymore bc INA-IC does Average
 		const byte K = 8;
 		uint32_t sum = 0;
 		for(byte i=0;i<K;i++) {
-			sum += INA219CurrentSensor.shuntCurrentRaw();
+			sum += analogRead(PIN_CURR_SENSE);
 			delay(1);
 		}
-		return (uint16_t)((sum/K)*scale);
+		return (uint16_t)((sum/K)*scale);*/
+		uint32_t busMicroAmps = INAcurrentSensor.getBusMicroAmps(0);
+		return (uint16_t) busMicroAmps/1000;
 	} else {
 		return 0;
 	}

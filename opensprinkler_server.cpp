@@ -1149,7 +1149,7 @@ void server_json_controller_main() {
 
 #if defined(ARDUINO)
 	if(os.status.has_curr_sense) {
-		uint16_t current = os.read_current(); // our modified os.method puts INA219 value here!
+		uint16_t current = os.read_current(); // our modified os.method puts INA value here!
 		if((!os.status.program_busy) && (current<os.baseline_current)) current=0;
 		bfill.emit_p(PSTR("\"curr\":$D,"), current);
 		/*bfill.emit_p(PSTR("\"curr\":$S,"), dtostrf(current,3,2,cSt)); if you want to send float via String. If(uncomment):TODO fix 2 uint16_t consumers*/

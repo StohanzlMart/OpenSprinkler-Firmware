@@ -39,8 +39,7 @@
 	#include "I2CRTC.h"
 
 	#if defined(ESP8266)
-		/* Added INA219 */
-    	#include "INA219.h"
+		#include "INA.h" // added INA unified Current Sensing
 		#include <FS.h>
 		#include <RCSwitch.h>
 		#include "SSD1306Display.h"
@@ -145,7 +144,7 @@ public:
 	// data members
 #if defined(ESP8266)
 	static SSD1306Display lcd;	// 128x64 OLED display
-	static INA219 INA219CurrentSensor; // CurrentSensor added
+	static INA_Class INAcurrentSensor; // INA unified Current Sensor
 #elif defined(ARDUINO)
 	static LiquidCrystal lcd; // 16x2 character LCD
 #else
