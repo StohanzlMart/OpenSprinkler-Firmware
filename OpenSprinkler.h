@@ -39,6 +39,7 @@
 	#include "I2CRTC.h"
 
 	#if defined(ESP8266)
+		#include "SHT31.h" // added SHT31 Humidity and Temperature Sensor
 		#include "ADS1115_WE.h" // added ADS1115 AD Converter/Comperator
 		#include "INA.h" // added INA unified Current Sensing
 		#include <FS.h>
@@ -147,6 +148,8 @@ public:
 	static SSD1306Display lcd;	// 128x64 OLED display
 	static INA_Class INAcurrentSensor; // INA unified Current Sensor
 	static ADS1115_WE ADS1115adc; // ADC class
+	static SHT31 SHT31sensor; // SHT Sensiron Humidity Temperature Sensor
+
 #elif defined(ARDUINO)
 	static LiquidCrystal lcd; // 16x2 character LCD
 #else

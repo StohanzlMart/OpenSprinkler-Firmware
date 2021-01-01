@@ -71,6 +71,7 @@ extern char tmp_buffer[];
 extern char ether_buffer[];
 
 #if defined(ESP8266)
+	SHT31 OpenSprinkler::SHT31sensor; // Added SHT Hum, Temp Sensor
 	ADS1115_WE OpenSprinkler::ADS1115adc; // Added ADS ADC
 	INA_Class OpenSprinkler::INAcurrentSensor; // Added INA Current Sensor
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
@@ -690,6 +691,9 @@ void OpenSprinkler::lcd_start() {
 	* ADS1115_RANGE_0256  ->  +/- 256 mV
 	*/
 	ADS1115adc.setVoltageRange_mV(ADS1115_RANGE_6144);
+
+	// init SHT31 with address, details: https://github.com/RobTillaart/SHT31/
+	SHT31sensor.begin(0x44);
 #else
 	// initialize 16x2 character LCD
 	// turn on lcd
@@ -1324,11 +1328,18 @@ uint16_t OpenSprinkler::read_current() {
 		uint32_t busMicroAmps = INAcurrentSensor.getBusMicroAmps(0);
 		return (uint16_t) busMicroAmps/1000;*/
 
+		/*
 		// testing ADS1115
 		ADS1115adc.setCompareChannels(ADS1115_COMP_0_GND);
 		ADS1115adc.startSingleMeasurement();
 		while(ADS1115adc.isBusy()){}
 		return (uint16_t) ADS1115adc.getRawResult();
+		*/
+
+		// testing SHT31
+		SHT31sensor.read(false);
+		float hum = SHT31sensor.getHumidity();
+		return (uint16_t) hum;
 	} else {
 		return 0;
 	}
