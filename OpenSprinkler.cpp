@@ -71,6 +71,7 @@ extern char tmp_buffer[];
 extern char ether_buffer[];
 
 #if defined(ESP8266)
+	ADS1115_WE OpenSprinkler::ADS1115adc; // Added ADS ADC
 	INA_Class OpenSprinkler::INAcurrentSensor; // Added INA Current Sensor
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
 	byte OpenSprinkler::state = OS_STATE_INITIAL;
@@ -675,6 +676,20 @@ void OpenSprinkler::lcd_start() {
   	INA_MODE_CONTINUOUS_BUS,    ///< Continuous bus, no shunt*/
 	INAcurrentSensor.setMode(INA_MODE_CONTINUOUS_BOTH);  // Bus/shunt measured continuously
 	INAcurrentSensor.alertOnBusOverVoltage(true, 12000);  // Trigger alert if over 12V on bus
+
+	// init ADS1115 ADC, details: https://github.com/wollewald/ADS1115_WE
+	ADS1115adc.init();
+	/* Set the voltage range of the ADC to adjust the gain
+	* Please note that you must not apply more than VDD + 0.3V to the input pins!
+	* 
+	* ADS1115_RANGE_6144  ->  +/- 6144 mV
+	* ADS1115_RANGE_4096  ->  +/- 4096 mV
+	* ADS1115_RANGE_2048  ->  +/- 2048 mV (default)
+	* ADS1115_RANGE_1024  ->  +/- 1024 mV
+	* ADS1115_RANGE_0512  ->  +/- 512 mV
+	* ADS1115_RANGE_0256  ->  +/- 256 mV
+	*/
+	ADS1115adc.setVoltageRange_mV(ADS1115_RANGE_6144);
 #else
 	// initialize 16x2 character LCD
 	// turn on lcd
@@ -1305,8 +1320,15 @@ uint16_t OpenSprinkler::read_current() {
 			delay(1);
 		}
 		return (uint16_t)((sum/K)*scale);*/
+		/* commented for testing, until MQTT works
 		uint32_t busMicroAmps = INAcurrentSensor.getBusMicroAmps(0);
-		return (uint16_t) busMicroAmps/1000;
+		return (uint16_t) busMicroAmps/1000;*/
+
+		// testing ADS1115
+		ADS1115adc.setCompareChannels(ADS1115_COMP_0_GND);
+		ADS1115adc.startSingleMeasurement();
+		while(ADS1115adc.isBusy()){}
+		return (uint16_t) ADS1115adc.getRawResult();
 	} else {
 		return 0;
 	}

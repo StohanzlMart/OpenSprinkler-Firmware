@@ -39,6 +39,7 @@
 	#include "I2CRTC.h"
 
 	#if defined(ESP8266)
+		#include "ADS1115_WE.h" // added ADS1115 AD Converter/Comperator
 		#include "INA.h" // added INA unified Current Sensing
 		#include <FS.h>
 		#include <RCSwitch.h>
@@ -145,6 +146,7 @@ public:
 #if defined(ESP8266)
 	static SSD1306Display lcd;	// 128x64 OLED display
 	static INA_Class INAcurrentSensor; // INA unified Current Sensor
+	static ADS1115_WE ADS1115adc; // ADC class
 #elif defined(ARDUINO)
 	static LiquidCrystal lcd; // 16x2 character LCD
 #else
