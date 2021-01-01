@@ -1315,8 +1315,8 @@ uint16_t OpenSprinkler::read_current() {
 			#endif		 
 		} else {
 			scale = 0.0;	// for other controllers, current is 0
-		} //^^^^^\\ also not needed atm, maybe uncomment when MQTT fin
-		// do an average --> Not needed anymore bc INA-IC does Average
+		} 
+		// do an average
 		const byte K = 8;
 		uint32_t sum = 0;
 		for(byte i=0;i<K;i++) {
@@ -1324,21 +1324,18 @@ uint16_t OpenSprinkler::read_current() {
 			delay(1);
 		}
 		return (uint16_t)((sum/K)*scale);
-		/* commented for testing, until MQTT works
+		
+		/*// testing INA
 		uint32_t busMicroAmps = INAcurrentSensor.getBusMicroAmps(0);
 		return (uint16_t) busMicroAmps/1000;*/
 
-		
-		// testing ADS1115
-		/*
+		/*//testing ADS1115
 		ADS1115adc.setCompareChannels(ADS1115_COMP_0_GND);
 		ADS1115adc.startSingleMeasurement();
 		while(ADS1115adc.isBusy()){}
 		return (uint16_t) ADS1115adc.getRawResult();*/
 		
-
-		// testing SHT31
-		/*
+		/*// testing SHT31
 		SHT31sensor.read(false);
 		float hum = SHT31sensor.getHumidity();
 		return (uint16_t) hum;*/
