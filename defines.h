@@ -76,6 +76,8 @@ typedef unsigned long ulong;
 #define NOTIFY_SENSOR2         0x0040
 #define NOTIFY_RAINDELAY       0x0080
 #define NOTIFY_STATION_ON      0x0100
+//added for custom sensors:
+#define NOTIFY_CUSTOM_SENSOR   0x0099
 
 /** HTTP request macro defines */
 #define HTTP_RQT_SUCCESS			 0

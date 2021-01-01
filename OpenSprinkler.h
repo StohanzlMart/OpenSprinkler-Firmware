@@ -249,6 +249,7 @@ public:
 	static void sensor_resetall();
 	
 	static uint16_t read_current(); // read current sensing value
+	static float readChannel(ADS1115_MUX); // added this to read custom ADS1115 sensors
 	static uint16_t baseline_current; // resting state current
 
 	static int detect_exp();				// detect the number of expansion boards

@@ -571,6 +571,26 @@ void do_loop()
 
 	// The main control loop runs once every second
 	if (curr_time != last_time) {
+		// ==============================================
+		// ====== Custom Sensor to MQTT Functions =======
+		// ==============================================
+
+		// SHT31
+		os.SHT31sensor.read(false);
+		push_message(NOTIFY_CUSTOM_SENSOR,0,os.SHT31sensor.getTemperature());
+		push_message(NOTIFY_CUSTOM_SENSOR,1,os.SHT31sensor.getHumidity());
+
+		// ADS1115
+		push_message(NOTIFY_CUSTOM_SENSOR,2,os.readChannel(ADS1115_COMP_0_GND));
+		push_message(NOTIFY_CUSTOM_SENSOR,3,os.readChannel(ADS1115_COMP_1_GND));
+		push_message(NOTIFY_CUSTOM_SENSOR,4,os.readChannel(ADS1115_COMP_2_GND));
+		push_message(NOTIFY_CUSTOM_SENSOR,5,os.readChannel(ADS1115_COMP_3_GND));
+		
+		// INA
+		push_message(NOTIFY_CUSTOM_SENSOR,6,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(0)/1000);
+		push_message(NOTIFY_CUSTOM_SENSOR,7,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(1)/1000);
+		push_message(NOTIFY_CUSTOM_SENSOR,8,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(2)/1000);
+
 #if defined(ENABLE_DEBUG)
 	/*
 	#if defined(ESP8266)
@@ -1297,6 +1317,15 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 	}
 
 	switch(type) {
+		case  NOTIFY_CUSTOM_SENSOR:
+
+			// todo: add IFTTT support for this event as well
+			if (os.mqtt.enabled()) {
+				sprintf_P(topic, PSTR("opensprinkler/sensor/custom/%d"), lval);
+				sprintf_P(payload, PSTR("{\"value1\":%d}"), (int) fval);
+			}
+			break;
+
 		case  NOTIFY_STATION_ON:
 
 			// todo: add IFTTT support for this event as well
