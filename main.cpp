@@ -587,10 +587,10 @@ void do_loop()
 		push_message(NOTIFY_CUSTOM_SENSOR,2,os.readChannel(ADS1115_COMP_2_GND),"adc");
 		push_message(NOTIFY_CUSTOM_SENSOR,3,os.readChannel(ADS1115_COMP_3_GND),"adc");
 		
-		// INA
-		push_message(NOTIFY_CUSTOM_SENSOR,0,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(0)/1000,"INA");
-		push_message(NOTIFY_CUSTOM_SENSOR,1,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(1)/1000,"INA");
-		push_message(NOTIFY_CUSTOM_SENSOR,2,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(2)/1000,"INA");
+		// INA (1x3221@64; 1x219@65) automatically goes for all!
+		for (uint8_t i=0; i < os.INAdevicesFound; i++) {
+			push_message(NOTIFY_CUSTOM_SENSOR,i,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(i)/1000,os.INAcurrentSensor.getDeviceName(i));
+		}
 
 #if defined(ENABLE_DEBUG)
 	/*
@@ -1323,7 +1323,11 @@ void push_message(int type, uint32_t lval, float fval, const char* sval) {
 			// todo: add IFTTT support for this event as well
 			if (os.mqtt.enabled()) {
 				sprintf_P(topic, PSTR("opensprinkler/sensor/%s/%d"), sval, lval);
-				sprintf_P(payload, PSTR("{\"value\":%d.%02d}"), (int)fval, (int)(fval*100)%100);
+				if ((int)(fval*100)%100) {
+					sprintf_P(payload, PSTR("{\"value\":%d.%02d}"), (int)fval, (int)(fval*100)%100); //stringify actual floats
+				} else {
+					sprintf_P(payload, PSTR("{\"value\":%d}"), (int)fval); // stringify int fvals
+				}
 			}
 			break;
 

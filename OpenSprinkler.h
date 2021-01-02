@@ -147,6 +147,7 @@ public:
 #if defined(ESP8266)
 	static SSD1306Display lcd;	// 128x64 OLED display
 	static INA_Class INAcurrentSensor; // INA unified Current Sensor
+	static uint8_t INAdevicesFound;  // INA devices found counter
 	static ADS1115_WE ADS1115adc; // ADC class
 	static SHT31 SHT31sensor; // SHT Sensiron Humidity Temperature Sensor
 

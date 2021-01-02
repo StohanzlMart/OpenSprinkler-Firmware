@@ -82,6 +82,8 @@ extern char ether_buffer[];
 	IOEXP* OpenSprinkler::drio;
 	RCSwitch OpenSprinkler::rfswitch;
 
+	uint8_t OpenSprinkler::INAdevicesFound{0}; // Added INA Devices Found counter
+
 	String OpenSprinkler::wifi_ssid="";
 	String OpenSprinkler::wifi_pass="";
 	byte OpenSprinkler::wifi_testmode = 0;
@@ -661,7 +663,7 @@ void OpenSprinkler::lcd_start() {
 
 	// init INA Current Sensors with (maxAmp,µOhm,[devID])
 	// for further details refer to https://github.com/Zanduino/INA/wiki/
-	INAcurrentSensor.begin(5,100000);
+	INAdevicesFound = INAcurrentSensor.begin(5,100000);
 	INAcurrentSensor.setBusConversion(8244);             // Maximum conversion time 8.244ms
 	INAcurrentSensor.setShuntConversion(8244);           // Maximum conversion time 8.244ms
 	INAcurrentSensor.setAveraging(128);                  // Average each reading n-times
@@ -1324,7 +1326,7 @@ uint16_t OpenSprinkler::read_current() {
 			delay(1);
 		}
 		return (uint16_t)((sum/K)*scale);
-		
+
 		/*// testing INA
 		uint32_t busMicroAmps = INAcurrentSensor.getBusMicroAmps(0);
 		return (uint16_t) busMicroAmps/1000;*/
