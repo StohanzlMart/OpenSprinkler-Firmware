@@ -595,6 +595,7 @@ void do_loop()
 		// INA (1x3221@64; 1x219@65) automatically goes for all!
 		for (uint8_t i=0; i < os.INAdevicesFound; i++) {
 			push_message(NOTIFY_CUSTOM_SENSOR,i,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(i)/1000,os.INAcurrentSensor.getDeviceName(i));
+			push_message(NOTIFY_CUSTOM_SENSOR,i+os.INAdevicesFound,(uint16_t) os.INAcurrentSensor.getBusMilliVolts(i),os.INAcurrentSensor.getDeviceName(i));
 		}
 
 #if defined(ENABLE_DEBUG)
