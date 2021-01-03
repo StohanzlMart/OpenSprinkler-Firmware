@@ -72,7 +72,9 @@ extern char ether_buffer[];
 
 #if defined(ESP8266)
 	SHT31 OpenSprinkler::SHT31sensor; // Added SHT Hum, Temp Sensor
-	ADS1115_WE OpenSprinkler::ADS1115adc(0x48); // Added ADS ADC
+	//ADS1X15 OpenSprinkler::ADS1X15adc; // Added ADS Master Class
+	ADS1115 OpenSprinkler::ADS1115adc0(0x48); // Derived ADS1115-class from ADS1X15
+	ADS1115 OpenSprinkler::ADS1115adc1(0x49);
 	INA_Class OpenSprinkler::INAcurrentSensor; // Added INA Current Sensor
 	SSD1306Display OpenSprinkler::lcd(0x3c, SDA, SCL);
 	byte OpenSprinkler::state = OS_STATE_INITIAL;
@@ -680,19 +682,16 @@ void OpenSprinkler::lcd_start() {
 	INAcurrentSensor.setMode(INA_MODE_CONTINUOUS_BOTH);  // Bus/shunt measured continuously
 	INAcurrentSensor.alertOnBusOverVoltage(true, 12000);  // Trigger alert if over 12V on bus
 
-	// init ADS1115 ADC, details: https://github.com/wollewald/ADS1115_WE
-	ADS1115adc.init();
-	/* Set the voltage range of the ADC to adjust the gain
-	* Please note that you must not apply more than VDD + 0.3V to the input pins!
-	* 
-	* ADS1115_RANGE_6144  ->  +/- 6144 mV
-	* ADS1115_RANGE_4096  ->  +/- 4096 mV
-	* ADS1115_RANGE_2048  ->  +/- 2048 mV (default)
-	* ADS1115_RANGE_1024  ->  +/- 1024 mV
-	* ADS1115_RANGE_0512  ->  +/- 512 mV
-	* ADS1115_RANGE_0256  ->  +/- 256 mV
-	*/
-	ADS1115adc.setVoltageRange_mV(ADS1115_RANGE_6144);
+	// init ADS1115 ADC, details: https://github.com/RobTillaart/ADS1X15
+	ADS1115adc0.begin();
+	ADS1115adc0.setGain(0); // this and below can also be set in loop individually for one port!
+	ADS1115adc0.setMode(1);
+	ADS1115adc0.setDataRate(4);
+	// init second ADC
+	ADS1115adc1.begin();
+	ADS1115adc1.setGain(0);
+	ADS1115adc1.setMode(1);
+	ADS1115adc1.setDataRate(4);
 
 	// init SHT31 with address, details: https://github.com/RobTillaart/SHT31/
 	SHT31sensor.begin(0x44);
@@ -1326,37 +1325,11 @@ uint16_t OpenSprinkler::read_current() {
 			delay(1);
 		}
 		return (uint16_t)((sum/K)*scale);
-
-		/*// testing INA
-		uint32_t busMicroAmps = INAcurrentSensor.getBusMicroAmps(0);
-		return (uint16_t) busMicroAmps/1000;*/
-
-		/*//testing ADS1115
-		ADS1115adc.setCompareChannels(ADS1115_COMP_0_GND);
-		ADS1115adc.startSingleMeasurement();
-		while(ADS1115adc.isBusy()){}
-		return (uint16_t) ADS1115adc.getRawResult();*/
-		
-		/*// testing SHT31
-		SHT31sensor.read(false);
-		float hum = SHT31sensor.getHumidity();
-		return (uint16_t) hum;*/
 	} else {
 		return 0;
 	}
 }
 #endif
-
-// added function for ADS1115, see
-// https://github.com/wollewald/ADS1115_WE/blob/master/examples/Single_Shot/Single_Shot.ino
-float OpenSprinkler::readChannel(ADS1115_MUX channel) {
-	float voltage = 0.0;
-	ADS1115adc.setCompareChannels(channel);
-	ADS1115adc.startSingleMeasurement();
-	while(ADS1115adc.isBusy()){}
-	voltage = ADS1115adc.getResult_mV(); // alternative: getResult_mV for Millivolt
-	return voltage;
-}
 
 /** Read the number of 8-station expansion boards */
 // AVR has capability to detect number of expansion boards

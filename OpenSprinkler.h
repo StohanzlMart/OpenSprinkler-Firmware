@@ -40,7 +40,7 @@
 
 	#if defined(ESP8266)
 		#include "SHT31.h" // added SHT31 Humidity and Temperature Sensor
-		#include "ADS1115_WE.h" // added ADS1115 AD Converter/Comperator
+		#include "ADS1X15.h" // added ADS AD Converter/Comperator Familiy
 		#include "INA.h" // added INA unified Current Sensing
 		#include <FS.h>
 		#include <RCSwitch.h>
@@ -148,7 +148,9 @@ public:
 	static SSD1306Display lcd;	// 128x64 OLED display
 	static INA_Class INAcurrentSensor; // INA unified Current Sensor
 	static uint8_t INAdevicesFound;  // INA devices found counter
-	static ADS1115_WE ADS1115adc; // ADC class
+	//static ADS1X15 ADS1X15adc;	// ADC Class
+	static ADS1115 ADS1115adc0; // ADC1115 Class derived form ADS1X15
+	static ADS1115 ADS1115adc1;
 	static SHT31 SHT31sensor; // SHT Sensiron Humidity Temperature Sensor
 
 #elif defined(ARDUINO)
@@ -250,7 +252,6 @@ public:
 	static void sensor_resetall();
 	
 	static uint16_t read_current(); // read current sensing value
-	static float readChannel(ADS1115_MUX); // added this to read custom ADS1115 sensors
 	static uint16_t baseline_current; // resting state current
 
 	static int detect_exp();				// detect the number of expansion boards

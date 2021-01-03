@@ -582,10 +582,15 @@ void do_loop()
 
 
 		// ADS1115
-		push_message(NOTIFY_CUSTOM_SENSOR,0,os.readChannel(ADS1115_COMP_0_GND),"adc");
-		push_message(NOTIFY_CUSTOM_SENSOR,1,os.readChannel(ADS1115_COMP_1_GND),"adc");
-		push_message(NOTIFY_CUSTOM_SENSOR,2,os.readChannel(ADS1115_COMP_2_GND),"adc");
-		push_message(NOTIFY_CUSTOM_SENSOR,3,os.readChannel(ADS1115_COMP_3_GND),"adc");
+		float f = os.ADS1115adc0.toVoltage(1); // voltage factor
+		for (uint8_t i=0; i<4; i++) {
+			push_message(NOTIFY_CUSTOM_SENSOR,i,os.ADS1115adc0.readADC(i)*f,"adc0");
+		}
+
+		f = os.ADS1115adc1.toVoltage(1); // voltage factor
+		for (uint8_t i=0; i<4; i++) {
+			push_message(NOTIFY_CUSTOM_SENSOR,i,os.ADS1115adc1.readADC(i)*f,"adc1");
+		}
 		
 		// INA (1x3221@64; 1x219@65) automatically goes for all!
 		for (uint8_t i=0; i < os.INAdevicesFound; i++) {
