@@ -663,13 +663,15 @@ void OpenSprinkler::lcd_start() {
 	lcd.begin();
 	flash_screen();
 
-	// init INA Current Sensors with (maxAmp,µOhm,[devID])
-	// for further details refer to https://github.com/Zanduino/INA/wiki/
-	INAdevicesFound = INAcurrentSensor.begin(5,100000);
-	INAcurrentSensor.setBusConversion(8244);             // Maximum conversion time 8.244ms
-	INAcurrentSensor.setShuntConversion(8244);           // Maximum conversion time 8.244ms
-	INAcurrentSensor.setAveraging(128);                  // Average each reading n-times
-	/*INA_MODE_SHUTDOWN,          ///< Device powered down
+	if (get_wifi_mode() != WIFI_MODE_STA)
+	{
+		// init INA Current Sensors with (maxAmp,µOhm,[devID])
+		// for further details refer to https://github.com/Zanduino/INA/wiki/
+		INAdevicesFound = INAcurrentSensor.begin(5, 100000);
+		INAcurrentSensor.setBusConversion(8244);   // Maximum conversion time 8.244ms
+		INAcurrentSensor.setShuntConversion(8244); // Maximum conversion time 8.244ms
+		INAcurrentSensor.setAveraging(128);		   // Average each reading n-times
+		/*INA_MODE_SHUTDOWN,          ///< Device powered down
 	---> CAREFUL! If the system mode is set to triggered measurements rather than continuous
 		ones (see setMode() for details) then the next measurement is not triggered by this
 		read, that needs to be done with a call to getBusMilliVolts() or getShuntMicroVolts().
@@ -679,22 +681,23 @@ void OpenSprinkler::lcd_start() {
   	INA_MODE_POWER_DOWN,        ///< shutdown or power-down
   	INA_MODE_CONTINUOUS_SHUNT,  ///< Continuous shunt, no bus
   	INA_MODE_CONTINUOUS_BUS,    ///< Continuous bus, no shunt*/
-	INAcurrentSensor.setMode(INA_MODE_CONTINUOUS_BOTH);  // Bus/shunt measured continuously
-	INAcurrentSensor.alertOnBusOverVoltage(true, 12000);  // Trigger alert if over 12V on bus
+		INAcurrentSensor.setMode(INA_MODE_CONTINUOUS_BOTH);	 // Bus/shunt measured continuously
+		INAcurrentSensor.alertOnBusOverVoltage(true, 12000); // Trigger alert if over 12V on bus
 
-	// init ADS1115 ADC, details: https://github.com/RobTillaart/ADS1X15
-	ADS1115adc0.begin();
-	ADS1115adc0.setGain(0); // this and below can also be set in loop individually for one port!
-	ADS1115adc0.setMode(1);
-	ADS1115adc0.setDataRate(4);
-	// init second ADC
-	ADS1115adc1.begin();
-	ADS1115adc1.setGain(0);
-	ADS1115adc1.setMode(1);
-	ADS1115adc1.setDataRate(4);
+		// init ADS1115 ADC, details: https://github.com/RobTillaart/ADS1X15
+		ADS1115adc0.begin();
+		ADS1115adc0.setGain(0); // this and below can also be set in loop individually for one port!
+		ADS1115adc0.setMode(1);
+		ADS1115adc0.setDataRate(4);
+		// init second ADC
+		ADS1115adc1.begin();
+		ADS1115adc1.setGain(0);
+		ADS1115adc1.setMode(1);
+		ADS1115adc1.setDataRate(4);
 
-	// init SHT31 with address, details: https://github.com/RobTillaart/SHT31/
-	SHT31sensor.begin(0x44);
+		// init SHT31 with address, details: https://github.com/RobTillaart/SHT31/
+		SHT31sensor.begin(0x44);
+	}
 #else
 	// initialize 16x2 character LCD
 	// turn on lcd

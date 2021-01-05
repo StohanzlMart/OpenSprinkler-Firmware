@@ -574,28 +574,32 @@ void do_loop()
 		// ==============================================
 		// ====== Custom Sensor to MQTT Functions =======
 		// ==============================================
+		if (os.get_wifi_mode()!=WIFI_MODE_STA || WiFi.status()!=WL_CONNECTED || os.mqtt.enabled()==false)
+		{
+			// SHT31
+			os.SHT31sensor.read(false);
+			push_message(NOTIFY_CUSTOM_SENSOR, 0, os.SHT31sensor.getTemperature(), "temp");
+			push_message(NOTIFY_CUSTOM_SENSOR, 0, os.SHT31sensor.getHumidity(), "hum");
 
-		// SHT31
-		os.SHT31sensor.read(false);
-		push_message(NOTIFY_CUSTOM_SENSOR,0,os.SHT31sensor.getTemperature(),"temp");
-		push_message(NOTIFY_CUSTOM_SENSOR,0,os.SHT31sensor.getHumidity(),"hum");
+			// ADS1115
+			float f = os.ADS1115adc0.toVoltage(1); // voltage factor
+			for (uint8_t i = 0; i < 4; i++)
+			{
+				push_message(NOTIFY_CUSTOM_SENSOR, i, os.ADS1115adc0.readADC(i) * f, "adc0");
+			}
 
+			f = os.ADS1115adc1.toVoltage(1); // voltage factor
+			for (uint8_t i = 0; i < 4; i++)
+			{
+				push_message(NOTIFY_CUSTOM_SENSOR, i, os.ADS1115adc1.readADC(i) * f, "adc1");
+			}
 
-		// ADS1115
-		float f = os.ADS1115adc0.toVoltage(1); // voltage factor
-		for (uint8_t i=0; i<4; i++) {
-			push_message(NOTIFY_CUSTOM_SENSOR,i,os.ADS1115adc0.readADC(i)*f,"adc0");
-		}
-
-		f = os.ADS1115adc1.toVoltage(1); // voltage factor
-		for (uint8_t i=0; i<4; i++) {
-			push_message(NOTIFY_CUSTOM_SENSOR,i,os.ADS1115adc1.readADC(i)*f,"adc1");
-		}
-		
-		// INA (1x3221@64; 1x219@65) automatically goes for all!
-		for (uint8_t i=0; i < os.INAdevicesFound; i++) {
-			push_message(NOTIFY_CUSTOM_SENSOR,i,(uint16_t) os.INAcurrentSensor.getBusMicroAmps(i)/1000,os.INAcurrentSensor.getDeviceName(i));
-			push_message(NOTIFY_CUSTOM_SENSOR,i+os.INAdevicesFound,(uint16_t) os.INAcurrentSensor.getBusMilliVolts(i),os.INAcurrentSensor.getDeviceName(i));
+			// INA (1x3221@64; 1x219@65) automatically goes for all!
+			for (uint8_t i = 0; i < os.INAdevicesFound; i++)
+			{
+				push_message(NOTIFY_CUSTOM_SENSOR, i, (uint16_t)os.INAcurrentSensor.getBusMicroAmps(i) / 1000, os.INAcurrentSensor.getDeviceName(i));
+				push_message(NOTIFY_CUSTOM_SENSOR, i + os.INAdevicesFound, (uint16_t)os.INAcurrentSensor.getBusMilliVolts(i), os.INAcurrentSensor.getDeviceName(i));
+			}
 		}
 
 #if defined(ENABLE_DEBUG)
