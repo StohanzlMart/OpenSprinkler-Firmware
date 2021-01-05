@@ -663,7 +663,8 @@ void OpenSprinkler::lcd_start() {
 	lcd.begin();
 	flash_screen();
 
-	if (get_wifi_mode() != WIFI_MODE_STA)
+	//if (get_wifi_mode() != WIFI_MODE_AP)
+	if(true)
 	{
 		// init INA Current Sensors with (maxAmp,µOhm,[devID])
 		// for further details refer to https://github.com/Zanduino/INA/wiki/

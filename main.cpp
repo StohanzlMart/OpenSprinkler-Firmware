@@ -574,7 +574,7 @@ void do_loop()
 		// ==============================================
 		// ====== Custom Sensor to MQTT Functions =======
 		// ==============================================
-		if (os.get_wifi_mode()!=WIFI_MODE_STA || WiFi.status()!=WL_CONNECTED || os.mqtt.enabled()==false)
+		if (os.get_wifi_mode()!=WIFI_MODE_AP && WiFi.status()==WL_CONNECTED && os.mqtt.enabled()==true)
 		{
 			// SHT31
 			os.SHT31sensor.read(false);
