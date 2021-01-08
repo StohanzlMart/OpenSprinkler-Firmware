@@ -655,7 +655,6 @@ void OpenSprinkler::update_dev() {
 
 #if defined(ARDUINO)
 void OpenSprinkler::i2c_sensors_init() {
-	if (get_wifi_mode()!=WIFI_MODE_STA) return;
 	//if (get_wifi_mode() != WIFI_MODE_AP)
 	if(true)
 	{
