@@ -654,24 +654,17 @@ void OpenSprinkler::update_dev() {
 #endif // end network init functions
 
 #if defined(ARDUINO)
-/** Initialize LCD */
-void OpenSprinkler::lcd_start() {
-
-#if defined(ESP8266)
-	// initialize SSD1306
-	lcd.init();
-	lcd.begin();
-	flash_screen();
-
+void OpenSprinkler::i2c_sensors_init() {
+	if (get_wifi_mode()!=WIFI_MODE_STA) return;
 	//if (get_wifi_mode() != WIFI_MODE_AP)
 	if(true)
 	{
 		// init INA Current Sensors with (maxAmp,µOhm,[devID])
 		// for further details refer to https://github.com/Zanduino/INA/wiki/
 		INAdevicesFound = INAcurrentSensor.begin(5, 100000);
-		INAcurrentSensor.setBusConversion(8244);   // Maximum conversion time 8.244ms
-		INAcurrentSensor.setShuntConversion(8244); // Maximum conversion time 8.244ms
-		INAcurrentSensor.setAveraging(128);		   // Average each reading n-times
+		INAcurrentSensor.setBusConversion(600);   // Maximum conversion time 8.244ms
+		INAcurrentSensor.setShuntConversion(600); // Maximum conversion time 8.244ms
+		INAcurrentSensor.setAveraging(32);		   // Average each reading n-times
 		/*INA_MODE_SHUTDOWN,          ///< Device powered down
 	---> CAREFUL! If the system mode is set to triggered measurements rather than continuous
 		ones (see setMode() for details) then the next measurement is not triggered by this
@@ -683,7 +676,7 @@ void OpenSprinkler::lcd_start() {
   	INA_MODE_CONTINUOUS_SHUNT,  ///< Continuous shunt, no bus
   	INA_MODE_CONTINUOUS_BUS,    ///< Continuous bus, no shunt*/
 		INAcurrentSensor.setMode(INA_MODE_CONTINUOUS_BOTH);	 // Bus/shunt measured continuously
-		INAcurrentSensor.alertOnBusOverVoltage(true, 12000); // Trigger alert if over 12V on bus
+		INAcurrentSensor.alertOnBusOverVoltage(true, 5000); // Trigger alert if over 12V on bus
 
 		// init ADS1115 ADC, details: https://github.com/RobTillaart/ADS1X15
 		ADS1115adc0.begin();
@@ -699,6 +692,15 @@ void OpenSprinkler::lcd_start() {
 		// init SHT31 with address, details: https://github.com/RobTillaart/SHT31/
 		SHT31sensor.begin(0x44);
 	}
+}
+/** Initialize LCD */
+void OpenSprinkler::lcd_start() {
+
+#if defined(ESP8266)
+	// initialize SSD1306
+	lcd.init();
+	lcd.begin();
+	flash_screen();
 #else
 	// initialize 16x2 character LCD
 	// turn on lcd
@@ -976,6 +978,9 @@ void OpenSprinkler::begin() {
 	
 	// detect and check RTC type
 	RTC.detect();
+
+	// init I2C sensors
+	i2c_sensors_init();
 
 #else
 	DEBUG_PRINTLN(get_runtime_path());
